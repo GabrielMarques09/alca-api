@@ -6,6 +6,8 @@ import { BrandCreateInput } from './dto/brand-create.input'
 import { BrandUpdateInput } from './dto/brand-update.input'
 import { GraphQLUpload } from 'apollo-server-express'
 import { FileUpload } from 'graphql-upload'
+import { UseGuards } from '@nestjs/common'
+import { AuthGuard } from 'src/utils/jwt-auth.guard'
 
 @Resolver(of => BrandPublic)
 export class BrandResolver {
@@ -26,47 +28,48 @@ export class BrandResolver {
     return await this.brandService.findById(id)
   }
 
-  // @Mutation(returns => Boolean, { name: 'uploadBrandLogo' })
-  // async uploadLogo(
-  //   @Args('id') id: string,
-  //   @Args('file', { type: () => GraphQLUpload })
-  //   file: FileUpload
-  // ): Promise<boolean> {
-  //   const { createReadStream, filename, mimetype } = await file
-  //   return await this.brandService.uploadLogo(
-  //     id,
-  //     createReadStream,
-  //     filename,
-  //     mimetype
-  //   )
-  // }
-
-  @Mutation(returns => BrandPublic, { name: 'createBrand' })
+  @UseGuards(AuthGuard)
+  @Mutation(returns => BrandPublic, { name: 'panelCreateBrand' })
   async createBrand(
     @Args('input') input: BrandCreateInput
   ): Promise<BrandPublic> {
     return this.brandService.create(BrandMapper.toEntity(input))
   }
 
-  @Mutation(returns => Boolean, { name: 'uploadBrandLogo' })
+  @UseGuards(AuthGuard)
+  @Mutation(returns => Boolean, { name: 'panelUploadBrandLogo' })
   async uploadLogo(
     @Args('id') id: string,
     @Args('file', { type: () => GraphQLUpload })
     file: FileUpload
   ): Promise<boolean> {
     const { createReadStream, filename, mimetype } = await file
-    await this.brandService.uploadLogo(id, createReadStream, filename, mimetype)
-    return true
+    return await this.brandService.uploadLogo(
+      id,
+      createReadStream,
+      filename,
+      mimetype
+    )
   }
 
-  @Mutation(returns => BrandPublic, { name: 'updateBrand' })
-  async updateCategory(
+  @UseGuards(AuthGuard)
+  @Mutation(returns => Boolean, { name: 'panelRemoveBrandLogo' })
+  async removeLogo(@Args('id') id: string): Promise<boolean> {
+    return await this.brandService.removeBrandLogo(id)
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(returns => BrandPublic, { name: 'panelUpdateBrand' })
+  async updateBrand(
     @Args('input') input: BrandUpdateInput
   ): Promise<BrandPublic> {
-    return this.brandService.update(input)
+    return BrandMapper.fromEntityToPublic(
+      await this.brandService.update(BrandMapper.fromUpdateToEntity(input))
+    )
   }
 
-  @Mutation(returns => Boolean, { name: 'deleteBrand' })
+  @UseGuards(AuthGuard)
+  @Mutation(returns => Boolean, { name: 'panelDeleteBrand' })
   async deleteCategory(@Args('id') input: string): Promise<boolean> {
     return this.brandService.delete(input)
   }

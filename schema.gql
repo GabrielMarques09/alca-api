@@ -8,43 +8,98 @@ type Category {
   slug: String
 }
 
+type Variation {
+  optionName1: String!
+  optionName2: String!
+  sku: String!
+  price: Float!
+  weight: Float!
+  stock: Int!
+}
+
 type Product {
   id: String
   name: String
   slug: String
   description: String
   category: String
+  price: Float
+  images: [String!]
+  optionNames: [String!]
+  variations: [Variation!]
 }
 
 type Brand {
   id: String
   name: String
   slug: String
+  logo: String
 }
+
+type User {
+  id: String
+  name: String
+  email: String
+  role: String
+}
+
+type AuthToken {
+  refreshToken: String!
+  accessToken: String!
+}
+
+type AuthSession {
+  id: String!
+  userAgent: String
+  lastUsedAt: DateTime
+  active: Boolean
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
 
 type Query {
   getAllCategories: [Category!]!
   getCategoryBySlug(slug: String!): Category!
   getCategoryById(id: String!): Category!
   getAllProducts: [Product!]!
+  getAllProductsByCategory(categorySlug: String!): [Product!]!
+  getAllProductsByBrand(brandSlug: String!): [Product!]!
   getProductById(id: String!): Product!
   getProductBySlug(slug: String!): Product!
   getAllBrands: [Brand!]!
   getBrandBySlug(slug: String!): Brand!
   getBrandById(id: String!): Brand!
+  panelGetAllUsers: [User!]!
+  panelGetAllUsersSessions(id: String!): [AuthSession!]!
+  panelGetUserById(id: String!): User!
+  panelGetUserByEmail(email: String!): User!
+  panelGetMe: User!
 }
 
 type Mutation {
-  createCategory(input: CategoryCreateInput!): Category!
-  updateCategory(input: CategoryUpdateInput!): Category!
-  deleteCategory(id: String!): Boolean!
-  createProduct(input: ProductCreateInput!): Product!
-  updateProduct(input: ProductUpdateInput!): Product!
-  deleteProduct(id: String!): Boolean!
-  createBrand(input: BrandCreateInput!): Brand!
-  uploadBrandLogo(file: Upload!, id: String!): Boolean!
-  updateBrand(input: BrandUpdateInput!): Brand!
-  deleteBrand(id: String!): Boolean!
+  panelCreateCategory(input: CategoryCreateInput!): Category!
+  panelUpdateCategory(input: CategoryUpdateInput!): Category!
+  panelDeleteCategory(id: String!): Boolean!
+  panelCreateProduct(input: ProductCreateInput!): Product!
+  panelUpdateProduct(input: ProductUpdateInput!): Product!
+  panelDeleteProduct(id: String!): Boolean!
+  panelUploadProductImage(file: Upload!, id: String!): Boolean!
+  panelDeleteProductImage(url: String!, id: String!): Boolean!
+  panelCreateBrand(input: BrandCreateInput!): Brand!
+  panelUploadBrandLogo(file: Upload!, id: String!): Boolean!
+  panelRemoveBrandLogo(id: String!): Boolean!
+  panelUpdateBrand(input: BrandUpdateInput!): Brand!
+  panelDeleteBrand(id: String!): Boolean!
+  panelCreateUser(input: UserCreateInput!): User!
+  panelUpdateUser(input: UserUpdateInput!): User!
+  panelChangeUserPass(input: UserPassUpdateInput!): Boolean!
+  panelDeleteUser(id: String!): Boolean!
+  auth(input: AuthUserInput!): AuthToken!
+  accessToken(refreshToken: String!): String!
+  panelInvalidateUserSession(id: String!): Boolean!
 }
 
 input CategoryCreateInput {
@@ -63,6 +118,21 @@ input ProductCreateInput {
   slug: String!
   description: String!
   category: String!
+  sku: String
+  price: Float
+  weight: Float
+  optionNames: [String!]
+  variations: [VariationInput!]
+  stock: Int!
+}
+
+input VariationInput {
+  optionName1: String!
+  optionName2: String!
+  sku: String!
+  price: Float!
+  weight: Float!
+  stock: Int!
 }
 
 input ProductUpdateInput {
@@ -73,16 +143,41 @@ input ProductUpdateInput {
   category: String!
 }
 
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
 input BrandCreateInput {
   name: String!
   slug: String!
 }
 
-"""The `Upload` scalar type represents a file upload."""
-scalar Upload
-
 input BrandUpdateInput {
   id: String!
   name: String!
   slug: String!
+}
+
+input UserCreateInput {
+  name: String!
+  email: String!
+  passwd: String!
+  role: String!
+}
+
+input UserUpdateInput {
+  id: String!
+  name: String!
+  passwd: String!
+  email: String!
+  role: String!
+}
+
+input UserPassUpdateInput {
+  id: String!
+  passwd: String!
+}
+
+input AuthUserInput {
+  email: String!
+  passwd: String!
 }

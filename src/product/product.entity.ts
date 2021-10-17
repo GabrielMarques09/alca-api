@@ -1,3 +1,4 @@
+import { Brand } from 'src/brand/brand.entity'
 import { Category } from 'src/category/category.entity'
 import {
   Column,
@@ -6,6 +7,15 @@ import {
   PrimaryColumn,
   PrimaryGeneratedColumn
 } from 'typeorm'
+
+interface ProductVariation {
+  optionName1: string
+  optionName2: string
+  sku: string
+  price: number
+  weight: number
+  stock: number
+}
 
 @Entity()
 export class Product {
@@ -21,6 +31,30 @@ export class Product {
   @Column({ length: 250, nullable: false })
   slug: string
 
+  @Column({ nullable: true, type: 'integer' })
+  stock: number
+
   @ManyToOne(type => Category, category => category.id)
   category: Category
+
+  @ManyToOne(type => Brand, brand => brand.id)
+  brand: Brand
+
+  @Column({ type: 'jsonb', nullable: true })
+  optionNames: string[]
+
+  @Column({ type: 'jsonb', nullable: true })
+  variations: ProductVariation[]
+
+  @Column({ length: 250, nullable: true })
+  sku: string
+
+  @Column({ nullable: true })
+  price: number
+
+  @Column({ nullable: true, type: 'money' })
+  weight: number
+
+  @Column({ type: 'jsonb', nullable: true })
+  images: string[]
 }

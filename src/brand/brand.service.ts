@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { S3 } from 'src/utils/s3'
 import { Repository } from 'typeorm'
 import { Brand } from './brand.entity'
+import * as sharp from 'sharp'
 
 @Injectable()
 export class BrandService {
@@ -31,15 +32,35 @@ export class BrandService {
     filename: string,
     mimetype: string
   ): Promise<boolean> {
-    const stream = createReadStream()
-    await this.s3.upload(
-      filename,
+    const brand = await this.brandRepository.findOne(id)
+    if (!brand) {
+      return false
+    }
+    if (brand.logo) {
+      const filename = brand.logo.split('.com/')[1]
+      await this.s3.deleteObject('alcashop-assets', filename)
+    }
+    const stream = createReadStream().pipe(sharp().resize(300))
+    const url = await this.s3.upload(
       stream,
       mimetype,
       'alcashop-assets',
       id + '-' + filename
     )
-    return null
+    await this.brandRepository.update(id, {
+      logo: url
+    })
+    return true
+  }
+
+  async removeBrandLogo(id: string): Promise<boolean> {
+    const brand = await this.brandRepository.findOne(id)
+    const filename = brand.logo.split('.com/')[1]
+    await this.s3.deleteObject('alcashop-assets', filename)
+    await this.brandRepository.update(brand.id, {
+      logo: null
+    })
+    return true
   }
 
   async update(input: Brand): Promise<Brand> {
@@ -50,7 +71,15 @@ export class BrandService {
     return input
   }
   async delete(id: string): Promise<boolean> {
+    const brand = await this.brandRepository.findOne(id)
     try {
+      if (!brand) {
+        return false
+      }
+      if (brand.logo) {
+        const filename = brand.logo.split('.com/')[1]
+        await this.s3.deleteObject('alcashop-assets', filename)
+      }
       await this.brandRepository.delete(id)
       return true
     } catch (err) {

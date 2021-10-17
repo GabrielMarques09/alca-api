@@ -6,13 +6,12 @@ export class S3 {
   constructor() {
     aws.config.update({
       region: 'us-east-1',
-      accessKeyId: process.env.ACCESS_KEY,
-      secretAccessKey: process.env.SECRET_KEY
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACESS_KEY
     })
   }
   async upload(
-    filename,
-    stream: any,
+    stream: NodeJS.ReadStream,
     mimetype: string,
     bucket: string,
     destinationFilename: string
@@ -28,5 +27,22 @@ export class S3 {
     const { Location } = await s3.upload(s3Params).promise()
 
     return Location
+  }
+
+  async deleteObject(
+    bucket: string,
+    destinationFilename: string
+  ): Promise<boolean> {
+    const s3 = new aws.S3()
+    const s3Params = {
+      Bucket: bucket,
+      Key: destinationFilename
+    }
+    try {
+      await s3.deleteObject(s3Params).promise()
+      return true
+    } catch (err) {
+      return false
+    }
   }
 }

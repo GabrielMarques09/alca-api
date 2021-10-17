@@ -1,16 +1,16 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 
-@ObjectType('Brand')
-export class BrandPublic {
-  @Field({ nullable: true })
+@ObjectType('AuthSession')
+export class AuthSession {
+  @Field({ nullable: false })
   id: string
 
   @Field({ nullable: true })
-  name: string
+  userAgent: string
 
   @Field({ nullable: true })
-  slug: string
+  lastUsedAt: Date
 
   @Field({ nullable: true })
-  logo: string
+  active: boolean
 }

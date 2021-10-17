@@ -1,7 +1,7 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 
-@ObjectType('Brand')
-export class BrandPublic {
+@ObjectType('User')
+export class UserPublic {
   @Field({ nullable: true })
   id: string
 
@@ -9,8 +9,8 @@ export class BrandPublic {
   name: string
 
   @Field({ nullable: true })
-  slug: string
+  email: string
 
   @Field({ nullable: true })
-  logo: string
+  role: string
 }

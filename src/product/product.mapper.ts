@@ -1,8 +1,8 @@
-import { Category } from "src/category/category.entity";
-import { ProductPublic } from "./dto/product";
-import { ProductCreateInput } from "./dto/product-create.input";
-import { ProductUpdateInput } from "./dto/product-update.input";
-import { Product } from "./product.entity";
+import { Category } from 'src/category/category.entity'
+import { ProductPublic } from './dto/product'
+import { ProductCreateInput } from './dto/product-create.input'
+import { ProductUpdateInput } from './dto/product-update.input'
+import { Product } from './product.entity'
 
 export class ProductMapper {
   public static toEntity(input: ProductCreateInput): Product {
@@ -14,6 +14,14 @@ export class ProductMapper {
     const category = new Category()
     category.id = input.category
     entity.category = category
+    entity.sku = input.sku
+    entity.price = input.price
+    entity.weight = input.weight
+
+    entity.optionNames = input.optionNames
+    entity.variations = input.variations
+    entity.stock = input.stock
+
     return entity
   }
 
@@ -27,16 +35,26 @@ export class ProductMapper {
     const category = new Category()
     category.id = input.category
     entity.category = category
+
     return entity
   }
 
   public static fromToEntityToPublic(entity: Product): ProductPublic {
     const product = new ProductPublic()
+    product.id = entity.id
     product.name = entity.name
     product.slug = entity.slug
     product.description = entity.description
     product.category = entity.category.toString()
-    product.id = entity.id
+    product.images = entity.images
+    product.price = Number(
+      entity.price.toString().replace('R$', '').replace(',', '.')
+    )
+    if (product.price != 0) {
+      console.log(product.price)
+    }
+    product.variations = entity.variations
+    product.optionNames = entity.optionNames
     return product
   }
 }
